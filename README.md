@@ -62,6 +62,8 @@ base for each of the app's downstream services is defined in `cmd/parts`.
 
 HTTP handlers and other shared functionality is defined in `podtato-head-microservices/pkg`.
 
+To run local tests on the Go code, run `make podtato-head-verify`.
+
 ### Build
 
 Build an image for each part - entry, hat, each arm and each leg - with `make

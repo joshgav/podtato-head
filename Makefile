@@ -25,4 +25,9 @@ push-server-images:
 test-server:
 	podtato-head-server/build/test_image.sh
 
-.PHONY: build-microservices-images push-microservices-images test-microservices install-requirements build-server-images push-server-images test-server
+podtato-head-verify:
+	$(MAKE) -C podtato-head vet
+	$(MAKE) -C podtato-head fmt
+	$(MAKE) -C podtato-head test
+
+.PHONY: build-microservices-images push-microservices-images test-microservices install-requirements build-server-images push-server-images test-server podtato-head-verify

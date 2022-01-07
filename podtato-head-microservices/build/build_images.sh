@@ -5,10 +5,10 @@
 # GITHUB_TOKEN
 # COSIGN_KEY_PATH
 # COSIGN_PASSWORD
-# VERSION: if set, override default version. Default version is previous tag for non-main branches, incremented tag for main
+# IMAGE_VERSION: if set, override default image version/tag. Default version is calculated by incrementing the previous tag.
 # RELEASE_BUILD: if set, push to ghcr.io/podtato-head, increment version from last tag, and possibly apply a git tag
-# INCREMENT_MAJOR: if set, increment major on release (default is to increment minor)
-# INCREMENT_PATCH: if set, increment patch (x.y.Z) on release (default is to increment minor)
+# INCREMENT_MAJOR: if set, increment major on release (default is to increment patch)
+# INCREMENT_MINOR: if set, increment minor on release (default is to increment patch)
 # PUSH_TO_REGISTRY: if set, push image to remote registry after building locally
 
 ### set up build
@@ -24,22 +24,18 @@ fi
 # /end set common variables
 
 # set up registry access
+source ${root_dir}/scripts/registry-secrets.sh
+
 registry=ghcr.io
 github_user=${1:-${GITHUB_USER}}
 github_token=${2:-${GITHUB_TOKEN}}
 commit_sha=$(git rev-parse HEAD)
 
-# sign in if possible
-if [[ -z "${github_token}" ]]; then
-    echo "WARNING: GITHUB_TOKEN not set, push may fail"
-else
-    echo "${github_token}" | docker login --username=${github_user} --password-stdin ${registry} &> /dev/null
-fi
+login_ghcr "${github_user}" "${github_token}"
 # /end set up registry access
 
 # set version/tag for this build
-source ${this_dir}/version.sh
-version=$(version_to_use)
+version=$(${this_dir}/image_version.sh)
 echo "INFO: will use version/tag: ${version}"
 # /end set version
 

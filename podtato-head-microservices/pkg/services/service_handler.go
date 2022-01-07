@@ -45,4 +45,3 @@ func HandleExternalService(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

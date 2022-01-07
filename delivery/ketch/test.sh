@@ -5,6 +5,7 @@ github_token=${2}
 
 this_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 root_dir=$(cd ${this_dir}/../.. && pwd)
+source ${root_dir}/scripts/registry-secrets.sh
 
 if [[ -z "${SKIP_CLUSTER_SETUP}" ]]; then ${this_dir}/setup-cluster.sh; fi
 
@@ -13,12 +14,8 @@ kubectl create namespace ${namespace} --save-config &> /dev/null
 kubectl config set-context --current --namespace=${namespace}
 
 if [[ -n "${github_token}" && -n "${github_user}" ]]; then
-    # ghcr secret in podtato-ketch
-    kubectl delete secret ghcr &> /dev/null
-    kubectl create secret docker-registry ghcr \
-        --docker-server 'https://ghcr.io/' \
-        --docker-username "${github_user}" \
-        --docker-password "${github_token}"
+    login_ghcr "${github_user}" "${github_token}"
+
     kubectl patch serviceaccount default \
         --patch '{ "imagePullSecrets": [{ "name": "ghcr" }]}'
 fi
