@@ -8,9 +8,9 @@ source ${root_dir}/scripts/registry-secrets.sh
 
 github_user=${1:-${GITHUB_USER}}
 github_token=${2:-${GITHUB_TOKEN}}
-image_version=$(${root_dir}/podtato-head/build/image_version.sh)
 
-echo "github_user: ${github_user}"
+image_version=$(${root_dir}/podtato-head-microservices/build/image_version.sh)
+echo "INFO: using tag: ${image_version}"
 
 namespace=podtato-kustomize
 kubectl create namespace ${namespace} --save-config || true &> /dev/null
@@ -18,17 +18,16 @@ kubectl config set-context --current --namespace ${namespace}
 
 if [[ -n "${github_token}" && -n "${github_user}" ]]; then
     install_ghcr_secret ${namespace} "${github_user}" "${github_token}"
-
-     kubectl patch serviceaccount default \
+    kubectl patch serviceaccount default \
         --patch '{ "imagePullSecrets": [{ "name": "ghcr" }]}'
 fi
 
 parts=("entry" "hat" "left-leg" "left-arm" "right-leg" "right-arm")
 
 echo ""
-echo "=== apply base"
+echo "=== apply kustomize base"
 if [[ -z "${RELEASE_BUILD}" ]]; then
-    echo "INFO: use ghcr.io/${github_user}/podtato-head/...${image_version:+:${image_version}}"
+    echo "INFO: use ghcr.io/${github_user}/podtato-head/entry${image_version:+:${image_version}}"
 
     # copy original and use a temp file for edits
     cp ${this_dir}/base/kustomization.yaml ${this_dir}/base/original_kustomization.yaml
@@ -40,10 +39,6 @@ if [[ -z "${RELEASE_BUILD}" ]]; then
 fi
 
 kustomize build ${this_dir}/base | kubectl apply -f -
-
-echo ""
-echo "=== kubectl get deployments"
-kubectl get deployments --namespace=${namespace}
 
 echo ""
 echo "=== await readiness of deployments..."
@@ -83,14 +78,11 @@ kubectl config set-context --current --namespace ${namespace}
 
 if [[ -n "${github_token}" && -n "${github_user}" ]]; then
     install_ghcr_secret ${namespace} "${github_user}" "${github_token}"
-
     kubectl patch serviceaccount default \
         --patch '{ "imagePullSecrets": [{ "name": "ghcr" }]}'
 fi
 
 kustomize build ${this_dir}/overlay | kubectl apply -f -
-
-kubectl get deployments --namespace=${namespace}
 
 echo ""
 echo "=== await readiness of deployments..."
