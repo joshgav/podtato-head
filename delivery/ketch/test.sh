@@ -1,11 +1,11 @@
 #! /usr/bin/env bash
 
-github_user=${1}
-github_token=${2}
-
 this_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 root_dir=$(cd ${this_dir}/../.. && pwd)
 source ${root_dir}/scripts/registry-secrets.sh
+
+github_user=${1:-${GITHUB_USER}}
+github_token=${2:-${GITHUB_TOKEN}}
 
 if [[ -z "${SKIP_CLUSTER_SETUP}" ]]; then ${this_dir}/setup-cluster.sh; fi
 
@@ -41,7 +41,6 @@ fi
 ## add ketch app
 ## must login _locally_ for image push, _in cluster_ for image pull
 echo "----> ketch app deploy:"
-# docker login ghcr.io --username ${github_user} --password "${github_token}"
 ketch app deploy podtato-head "${root_dir}/podtato-head-server" \
     --registry-secret ghcr \
     --builder gcr.io/buildpacks/builder:v1 \

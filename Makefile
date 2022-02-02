@@ -5,6 +5,11 @@ install-requirements:
 
 ### podtato-head-microservices
 
+podtato-head-verify:
+	$(MAKE) -C podtato-head-microservices vet
+	$(MAKE) -C podtato-head-microservices fmt
+	$(MAKE) -C podtato-head-microservices test
+
 build-microservices-images:
 	podtato-head-microservices/build/build_images.sh
 
@@ -26,10 +31,5 @@ push-server-images:
 test-server:
 	PUSH_TO_REGISTRY=1 podtato-head-server/build/build_image.sh
 	podtato-head-server/build/test_image.sh
-
-podtato-head-verify:
-	$(MAKE) -C podtato-head-microservices vet
-	$(MAKE) -C podtato-head-microservices fmt
-	$(MAKE) -C podtato-head-microservices test
 
 .PHONY: build-microservices-images push-microservices-images test-microservices install-requirements build-server-images push-server-images test-server podtato-head-verify
