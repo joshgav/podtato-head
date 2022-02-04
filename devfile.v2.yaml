@@ -1,0 +1,39 @@
+## derived from <https://github.com/devfile/registry/blob/main/stacks/go/devfile.yaml>
+schemaVersion: 2.1.0
+
+metadata:
+  name: podtato-head-workspace
+
+components:
+  - name: runtime
+    container:
+      image: quay.io/devfile/universal-developer-image:ubi8-latest
+      memoryLimit: 2G
+      mountSources: true
+      sourceMapping: /projects
+      endpoints:
+        - name: golang
+          protocol: http
+          targetPort: 9000
+          exposure: public
+
+commands:
+  - id: build
+    exec:
+      label: "build entry binary"
+      component: runtime
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: GOCACHE=/projects/.cache go build podtato-head-microservices/cmd/entry/main.go
+      group:
+        isDefault: true
+        kind: build
+
+  - id: run
+    exec:
+      label: "run the app"
+      component: runtime
+      workingDir: ${PROJECT_SOURCE}
+      commandLine: GOCACHE=/projects/.cache go run podtato-head-microservices/cmd/entry/main.go
+      group:
+        isDefault: true
+        kind: run
